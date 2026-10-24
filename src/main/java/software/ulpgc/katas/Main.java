@@ -1,22 +1,32 @@
 package software.ulpgc.katas;
 
-import software.ulpgc.katas.io.UrlVideogameReader;
+import software.ulpgc.katas.io.JsonWriter;
 import software.ulpgc.katas.io.VideogameReader;
-import software.ulpgc.katas.model.Videogame;
+import software.ulpgc.katas.model.VideogameExport;
 
 import java.io.IOException;
-import java.net.URL;
-import java.util.List;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Main {
-    static void main() throws IOException {
-        URL url = new URL("https://gist.githubusercontent.com/VamsiSukamanchi/e75c15ef386c24f26b02f9c7672f3ccd/raw/c96b551e942c13383d0e3d35761c2251b6b3b335/videogames.csv");
-        VideogameReader reader = new UrlVideogameReader(url);
-        List<Videogame> videogames = reader.readAll();
-        for (Videogame videogame : videogames) {
-            System.out.println(videogame);
+    public static void main(String[] args) throws IOException {
+        VideogameExport result;
+        try (InputStream input = Main.class.getResourceAsStream("/videogames-example.csv")) {
+            if (input == null) {
+                throw new IOException("No se encuentra videogames-example.csv");
+            }
+
+            result = VideogameReader.loadFrom(input);
         }
 
+        Path outputPath = Path.of("output.json");
+        try (OutputStream output = Files.newOutputStream(outputPath)) {
+            new JsonWriter().write(result, output);
+        }
 
+        System.out.println("JSON generado en: " + outputPath.toAbsolutePath());
+        System.out.println(result.metadata());
     }
 }

@@ -1,0 +1,35 @@
+{
+  "videogames": [
+    {
+      "rank": "1",
+      "name": "Minecraft",
+      "platform": "PC",
+      "yearOfRelease": "2011",
+      "genre": "Sandbox",
+      "publisher": "Mojang",
+      "naSales": "0",
+      "euSales": "0",
+      "jpSales": "0",
+      "otherSales": "0",
+      "globalSales": "0"
+    },
+    {
+      "rank": "2",
+      "name": "Portal 2",
+      "platform": "PC",
+      "yearOfRelease": "2011",
+      "genre": "Puzzle",
+      "publisher": "Valve",
+      "naSales": "0",
+      "euSales": "0",
+      "jpSales": "0",
+      "otherSales": "0",
+      "globalSales": "0"
+    }
+  ],
+  "metadata": {
+    "totalRecords": 3,
+    "validRecords": 2,
+    "discardedRecords": 1
+  }
+}

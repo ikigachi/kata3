@@ -1,0 +1,4 @@
+rank,name,platform,yearOfRelease,genre,publisher,naSales,euSales,jpSales,otherSales,globalSales
+1,Minecraft,PC,2011,Sandbox,Mojang,0,0,0,0,0
+2,Portal 2,PC,2011,Puzzle,Valve,0,0,0,0,0
+3,Invalid Game,PC,2020,,Unknown,0,0,0,0,0

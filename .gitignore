@@ -44,3 +44,4 @@ build/
 *.iml
 
 summary.txt
+/output.json

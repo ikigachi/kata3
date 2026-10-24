@@ -19,8 +19,7 @@ public class VideogameParser {
                 .map(field -> field == null || field.isBlank() ? null : field.strip())
                 .toArray(String[]::new);
 
-        if (fields[1] == null || fields[2] == null
-                || fields[3] == null || fields[4] == null) {
+        if (fields[1] == null || fields[2] == null || fields[3] == null || fields[4] == null) {
             return Optional.empty();
         }
 
