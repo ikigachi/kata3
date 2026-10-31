@@ -44,6 +44,21 @@ class VideogamePipelineTest {
     }
 
     @Test
+    void writesExpectedJsonToFile() throws IOException {
+        VideogameExport result = VideogameReader.loadFrom(
+                new StringReader(resourceText("/videogames-example.csv"))
+        );
+        Path output = temporaryDirectory.resolve("output.json");
+
+        new JsonWriter().write(result, output);
+
+        assertEquals(
+                JsonParser.parseString(resourceText("/expected.json")),
+                JsonParser.parseString(Files.readString(output, StandardCharsets.UTF_8))
+        );
+    }
+
+    @Test
     void convertsValidRecordToDomainObject() throws IOException {
         VideogameExport result = VideogameReader.loadFrom(
                 new StringReader(HEADER + "\n" + VALID_ROW)
@@ -59,6 +74,9 @@ class VideogamePipelineTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
+            "1,\"Unfinished,PC,2020,Puzzle,Publisher,0,0,0,0,0",
+            "1,Ga\"me,PC,2020,Puzzle,Publisher,0,0,0,0,0",
+            "1,\"Game\"unexpected,PC,2020,Puzzle,Publisher,0,0,0,0,0",
             "1,Incomplete",
             "1,Game,PC,2020,Puzzle,Publisher,0,0,0,0,0,extra",
             "1,,PC,2020,Puzzle,Publisher,0,0,0,0,0",
@@ -94,6 +112,19 @@ class VideogamePipelineTest {
                 """;
 
         assertEquals(JsonParser.parseString(expected), JsonParser.parseString(serialize(result)));
+    }
+
+    @Test
+    void preservesCommasAndEscapedQuotesInTitles() throws IOException {
+        String input = String.join("\n", HEADER,
+                "1,\"Game, Part Two\",PC,2020,Puzzle,Publisher,0,0,0,0,0",
+                "2,\"Game \"\"A\"\"\",PC,2021,Puzzle,Publisher,0,0,0,0,0");
+
+        VideogameExport result = VideogameReader.loadFrom(new StringReader(input));
+
+        assertEquals(List.of("Game, Part Two", "Game \"A\""),
+                result.videogames().stream().map(Videogame::name).toList());
+        assertEquals(new Metadata(2, 2, 0), result.metadata());
     }
 
     @Test

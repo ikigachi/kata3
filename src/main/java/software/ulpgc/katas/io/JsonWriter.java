@@ -9,9 +9,17 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class JsonWriter {
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    public void write(VideogameExport data, Path path) throws IOException {
+        try (OutputStream output = Files.newOutputStream(path)) {
+            write(data, output);
+        }
+    }
 
     public void write(VideogameExport data, OutputStream output) throws IOException {
         Writer writer = new OutputStreamWriter(output, StandardCharsets.UTF_8);
