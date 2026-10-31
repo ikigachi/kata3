@@ -8,20 +8,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 public interface VideogameReader {
-    VideogameExport readAll() throws IOException;
+    VideogameExport read(int count) throws IOException;
 
-    static VideogameExport loadFrom(InputStream inputStream) throws IOException {
-        return loadFrom(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+    static VideogameExport loadFrom(InputStream input) throws IOException {
+        return loadFrom(new InputStreamReader(input, StandardCharsets.UTF_8));
     }
 
     static VideogameExport loadFrom(Reader reader) throws IOException {
-        return loadFrom(reader.readAllLines());
-    }
-
-    static VideogameExport loadFrom(List<String> lines) {
-        return new VideogameTransformer().transform(lines);
+        return new VideogameTransformer().transform(reader.readAllLines());
     }
 }
