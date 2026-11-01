@@ -1,30 +1,16 @@
 {
-  "videogames": [
+  "movies": [
     {
-      "rank": "1",
-      "name": "Minecraft",
-      "platform": "PC",
-      "yearOfRelease": "2011",
-      "genre": "Sandbox",
-      "publisher": "Mojang",
-      "naSales": "0",
-      "euSales": "0",
-      "jpSales": "0",
-      "otherSales": "0",
-      "globalSales": "0"
+      "identifier": "night_of_the_living_dead",
+      "title": "Night of the Living Dead",
+      "creator": "George A. Romero",
+      "year": 1968
     },
     {
-      "rank": "2",
-      "name": "Portal 2",
-      "platform": "PC",
-      "yearOfRelease": "2011",
-      "genre": "Puzzle",
-      "publisher": "Valve",
-      "naSales": "0",
-      "euSales": "0",
-      "jpSales": "0",
-      "otherSales": "0",
-      "globalSales": "0"
+      "identifier": "the_general",
+      "title": "The General",
+      "creator": "Buster Keaton",
+      "year": 1926
     }
   ],
   "metadata": {
