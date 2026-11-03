@@ -120,3 +120,5 @@ The small variations are the collection requested from the API, the domain field
 ## Video
 
 [![Kata 3 - Video Explanation](https://img.youtube.com/vi/6FDf0B_LG3M/maxresdefault.jpg)](https://youtu.be/6FDf0B_LG3M)
+
+The video demonstrates the movie implementation and briefly presents the videogame and book repetitions.
