@@ -1,4 +1,4 @@
-rank,name,platform,yearOfRelease,genre,publisher,naSales,euSales,jpSales,otherSales,globalSales
-1,Minecraft,PC,2011,Sandbox,Mojang,0,0,0,0,0
-2,Portal 2,PC,2011,Puzzle,Valve,0,0,0,0,0
-3,Invalid Game,PC,2020,,Unknown,0,0,0,0,0
+"identifier","title","creator","date"
+"game_one","Example Game","Example Creator","2000-01-01T00:00:00Z"
+"game_two","Another Game","Another Creator","2001-01-01T00:00:00Z"
+"invalid","Invalid Game","","2020-01-01T00:00:00Z"

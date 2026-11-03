@@ -2,60 +2,79 @@
 
 ## Objective
 
-The objective of this kata is to transform external data into domain objects and serialize them as valid JSON, separating reading, parsing, validation, transformation, and writing.
+The objective of this kata is to read external CSV data, convert valid records into domain objects, and generate a JSON document with a collection and calculated metadata.
 
-The application retrieves a videogame CSV dataset from a public API, discards invalid records, and generates its own JSON document containing the valid videogames and metadata with the total, valid, and discarded record counts.
+This repetition uses videogames from Internet Archive. Reading, CSV parsing, domain validation, transformation, and JSON writing have separate responsibilities.
 
 ## Compilation and execution
 
-Run the following commands from the project root using JDK 26:
+Use JDK 26 and run these commands from the project root:
 
 ```sh
 mvn clean compile
 mvn exec:java
 ```
 
-The application requests `data/vgsales.csv` from the [GitHub Contents API](https://api.github.com/repos/algorithms-and-data-representation/Real-World-Data-Visualization/contents/data/vgsales.csv) and creates or replaces `output.json` in the project root. The dataset comes from [Real-World-Data-Visualization](https://github.com/algorithms-and-data-representation/Real-World-Data-Visualization).
+The application requests CSV from the API and creates or replaces `output.json` in the project root. Running `Main` requires Internet access.
 
-The request uses `Accept: application/vnd.github.raw+json` to receive the raw CSV, as specified in the [GitHub API documentation](https://docs.github.com/en/rest/repos/contents#get-repository-content). Although the media type name includes `+json`, this option returns the file contents, not a JSON description of the file. The conversion performed by the application is CSV to Java objects to JSON.
+## Request parameters
 
-Running `Main` requires Internet access. The console shows the output location and the actual record counts. Connection or API failures propagate as errors instead of being reported as an empty dataset; the output file is opened after the source has been read successfully.
+`Main` creates the reader and selects the requested number of records:
+
+```java
+VideogameReader reader = new ArchiveVideogameReader(new UrlCsvSource());
+VideogameExport result = reader.read(10);
+```
+
+Changing `10` to `20` changes the API request to `rows=20`. Recompile after editing `Main`:
+
+```sh
+mvn compile exec:java
+```
+
+The count must be positive. It limits the records requested from the server, rather than downloading the entire dataset and applying a local limit. The server may return fewer matches, and validation may discard some returned records, so the valid collection may contain fewer than the requested count.
+
+The reader searches `collection:softwarelibrary_msdos_games AND creator:* AND date:*`, selects `identifier`, `title`, `creator`, and `date`, and requests `output=csv`. See the [example API request](https://archive.org/advancedsearch.php?q=collection%3Asoftwarelibrary_msdos_games%20AND%20creator%3A*%20AND%20date%3A*&fl%5B%5D=identifier&fl%5B%5D=title&fl%5B%5D=creator&fl%5B%5D=date&rows=10&page=1&output=csv) and [Internet Archive advanced search](https://archive.org/advancedsearch.php).
+
+A source failure propagates as an error. `Main` opens the output file only after reading and transformation have succeeded.
 
 ## Technologies
 
 - Java 26.
 - Maven 3.9 or later.
 - Gson 2.14.0 for JSON serialization.
-- JUnit Jupiter 5.11.4 for automated tests.
+- JUnit Jupiter 5.11.4 for tests.
 
-Dependencies and Maven plugins are declared in `pom.xml`. Maven needs Internet access on the first run to download any dependencies that are not already available locally.
+Dependencies and build plugins are declared in `pom.xml`. The first Maven run may need Internet access to download dependencies.
 
 ## Project Structure
 
-The project uses the following base package: `software.ulpgc.katas`.
+The base package is `software.ulpgc.katas`.
 
-- `Main.java`: configures the API source and connects the reader to the JSON writer.
-- `model/Videogame.java`: domain object representing a valid videogame.
-- `model/Metadata.java`: stores the total, valid, and discarded record counts.
-- `model/VideogameExport.java`: groups the videogame collection and its metadata.
-- `io/VideogameReader.java`: accepts an `InputStream`, a `Reader`, or text lines and delegates their transformation.
-- `io/UrlVideogameReader.java`: reads CSV through a URL, applies the configured request headers and timeouts, and closes its input stream.
-- `parser/VideogameParser.java`: validates a CSV record and converts it into a domain object.
-- `service/VideogameTransformer.java`: skips the header, collects valid objects, and calculates the metadata.
-- `io/JsonWriter.java`: serializes the prepared result to an `OutputStream` or a file using Gson and UTF-8, closing the streams it opens itself.
-- `VideogamePipelineTest.java`: verifies the conversion and JSON output in `src/test/java`.
-- `UrlVideogameReaderTest.java`: verifies request configuration and source failures using test doubles without contacting the API.
+- `Main.java`: creates and connects the source, reader, and writer.
+- `model/Videogame.java`: immutable domain object with identifier, name, creator, and year; its constructor enforces required fields and a positive year.
+- `model/Metadata.java`: total, valid, and discarded record counts.
+- `model/VideogameExport.java`: immutable collection and metadata.
+- `io/VideogameReader.java`: reader contract with `read(int count)` and input methods accepting an `InputStream` or `Reader`.
+- `io/ArchiveVideogameReader.java`: builds the parameterized CSV request and closes the input stream it owns.
+- `io/CsvSource.java`: contract for obtaining an input stream from a URI; the caller closes the returned stream.
+- `io/UrlCsvSource.java`: URL adapter with CSV request headers and connection/read timeouts.
+- `parser/CsvParser.java`: separates CSV fields, including quoted commas and escaped quotes.
+- `parser/VideogameParser.java`: converts fields into a valid domain object.
+- `service/VideogameTransformer.java`: checks the header, collects valid objects, and calculates metadata.
+- `io/JsonWriter.java`: serializes prepared objects to a stream or file using Gson and UTF-8.
+
+The domain has no dependency on the API or Gson. `Main` injects the `CsvSource` implementation into the API reader, allowing tests to substitute the external source.
 
 ## Input and expected output
 
-The repository includes:
+The repository includes a small [example CSV](src/main/resources/videogames-example.csv) and its [expected JSON](src/test/resources/expected.json).
 
-- [Example CSV](src/main/resources/videogames-example.csv).
-- [Expected JSON](src/test/resources/expected.json).
+The input header must contain exactly `identifier,title,creator,date` in that order, with optional CSV quoting. Each record occupies one line. Commas and doubled quotes inside quoted fields are supported; multiline values are not supported.
 
-The CSV uses a header followed by records with 11 comma-separated fields. Quoted fields may contain commas and escaped double quotes. Multiline values are not supported. Name, platform, release year, and genre are required. The release year must be a positive integer.
+All four values are required. The API date must be a valid ISO instant, such as `2000-01-01T00:00:00Z`. The parser extracts its UTC year and the domain requires that year to be positive. The output maps `title` to `name` and `creator` to `creator`.
 
-The local example is used by the reproducible tests. It contains Minecraft, Portal 2, and an invalid record with an empty genre. Its expected output includes the two valid videogames and the following metadata:
+The example contains two valid records and one with an empty creator. Its expected counters are:
 
 ```json
 {
@@ -65,36 +84,41 @@ The local example is used by the reproducible tests. It contains Minecraft, Port
 }
 ```
 
-The header is excluded from the record count. The complete expected document for this local example is stored in `src/test/resources/expected.json`. The live API dataset contains different records, so its output and counters are not compared with this three-record example.
+The header is excluded from the count. Metadata describes the returned records, not the total number of matches in Internet Archive. The live response can differ from this fixed local example.
 
 ## Verification
-
-Run the automated tests from the project root:
 
 ```sh
 mvn clean test
 ```
 
-The test suite contains 23 test cases covering:
+There are 35 passing test cases covering:
 
-- Conversion of a valid record into a domain object.
-- Comparison with the expected JSON by content, independently of whitespace and property order.
-- Discarding incomplete or malformed records, empty required fields, and invalid years while continuing to process subsequent rows.
-- Preserving commas and escaped quotes in quoted titles and rejecting malformed quotes.
-- Empty input and input containing only a header, producing an empty collection and zero counters.
-- Parsing the generated JSON again, preserving quotes, line breaks, backslashes, and Unicode characters.
-- Equivalent results when reading from a file, an in-memory stream, or a `Reader`.
-- Writing the expected JSON to a file.
-- Configuring API headers and timeouts, retaining support for ordinary URLs, and propagating source failures without contacting an external service.
+- Comparison of the generated JSON with the fixed expected document by content.
+- Conversion of the API date to the domain year.
+- Incomplete rows, empty fields, invalid dates, and malformed CSV.
+- Empty input, header-only input, and unexpected headers.
+- Quoted commas, escaped quotes, and JSON round-trip with special characters.
+- Equivalent results from files, memory streams, and readers.
+- JSON file writing, domain invariants, and defensive collection copies.
+- Requests with `rows=1`, `rows=3`, `rows=10`, and `rows=20`, verified by an injected source.
+- Rejection of non-positive counts before contacting the source.
+- Propagation of external failures and closure of owned streams after success or invalid input.
 
-The verified result is 23 tests passed, with no failures or errors. Tests use local data and test doubles, do not contact the API, and do not require the generated `output.json`. Execution reports are written to `target/surefire-reports/`.
+The tests use local resources and source doubles, with no live API requests. They do not require or modify the root `output.json`. Reports are generated in `target/surefire-reports/`.
 
 ## Repetitions
 
-The videogame implementation is the second repetition and is developed in the `videogames-version` branch. The two additional comparable repetitions are pending.
+The three implementations use videogames, books, and movies while preserving the same CSV reading, parsing, validation, transformation, and JSON serialization flow.
 
-Each repetition must preserve the same reading, parsing, transformation, and JSON serialization structure, with only small variations. The final evaluable version is still pending integration into `master`.
+- `videogames-version`: videogames from the MS-DOS games collection.
+- `book-version`: books from the Internet Archive books collection.
+- `movie-version`: movies from the feature films collection, with identifier, title, creator, and year.
+
+The small variations are the collection requested from the API, the domain fields, and the example data. Selecting and integrating the final evaluable version into `master` are pending.
 
 ## Video
 
-Pending: add the link to the explanatory video, with a maximum duration of 7 minutes.
+[![Kata 3 - Video Explanation](https://img.youtube.com/vi/6FDf0B_LG3M/maxresdefault.jpg)](https://youtu.be/6FDf0B_LG3M)
+
+The video demonstrates the movie implementation and briefly presents the videogame and book repetitions.
