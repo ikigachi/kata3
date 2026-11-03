@@ -109,10 +109,16 @@ The tests use local resources and source doubles, with no live API requests. The
 
 ## Repetitions
 
-The `videogames-version` and `book-version` implementations follow the same CSV-to-domain-to-JSON structure. The small variations are the Internet Archive collection, the domain fields, and the example data.
+The three implementations use videogames, books, and movies while preserving the same CSV reading, parsing, validation, transformation, and JSON serialization flow.
 
-This branch contains the book repetition. The third repetition uses movies in `movie-version`. Integration of the final evaluable version into `master` is pending.
+- `videogames-version`: videogames from the MS-DOS games collection.
+- `book-version`: books from the Internet Archive books collection.
+- `movie-version`: movies from the feature films collection, with identifier, title, creator, and year.
+
+The small variations are the collection requested from the API, the domain fields, and the example data. Selecting and integrating the final evaluable version into `master` are pending.
 
 ## Video
 
-Pending: add the explanatory video link. Maximum duration: 7 minutes.
+[![Kata 3 - Video Explanation](https://img.youtube.com/vi/6FDf0B_LG3M/maxresdefault.jpg)](https://youtu.be/6FDf0B_LG3M)
+
+The video demonstrates the movie implementation and briefly presents the videogame and book repetitions.
