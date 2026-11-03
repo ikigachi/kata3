@@ -119,4 +119,4 @@ The small variations are the collection requested from the API, the domain field
 
 ## Video
 
-Pending: add the explanatory video link. Maximum duration: 7 minutes.
+[![Kata 3 - Video Explanation](https://img.youtube.com/vi/6FDf0B_LG3M/maxresdefault.jpg)](https://youtu.be/6FDf0B_LG3M)
